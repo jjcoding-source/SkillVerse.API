@@ -1,0 +1,6 @@
+@SkillVerse.API_HostAddress = http://localhost:5005
+
+GET {{SkillVerse.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
