@@ -9,5 +9,9 @@ namespace SkillVerse.API.Services.Interfaces
         Task<ApiResponse<WorkerProfileDto>> GetWorkerProfileAsync(int userId);
         Task<ApiResponse<bool>> SaveWorkerProfileAsync(int userId, WorkerProfileCreateDto dto);
         Task<ApiResponse<bool>> ToggleAvailabilityAsync(int userId, bool isAvailable);
+        Task<ApiResponse<List<WorkerSearchDto>>> SearchWorkersAsync(string? searchTerm = null,
+                                                                   string? city = null,
+                                                                   string? skill = null,
+                                                                   decimal? minRating = null);
     }
 }
