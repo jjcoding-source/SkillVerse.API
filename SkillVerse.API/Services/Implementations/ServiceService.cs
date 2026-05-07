@@ -1,7 +1,6 @@
 ﻿
 using System.Data;
-using Microsoft.Data.SqlClient;
-using SkillVerse.API.DataAccess;
+using SkillVerse.API.DataAccess.Repository.Interfaces;
 using SkillVerse.API.DTOs.Common;
 using SkillVerse.API.DTOs.Service;
 using SkillVerse.API.Services.Interfaces;
@@ -10,19 +9,18 @@ namespace SkillVerse.API.Services.Implementations
 {
     public class ServiceService : IServiceService
     {
-        private readonly DbHelper _dbHelper;
+        private readonly IServiceRepository _serviceRepository;
 
-        public ServiceService(DbHelper dbHelper)
+        public ServiceService(IServiceRepository serviceRepository)
         {
-            _dbHelper = dbHelper;
+            _serviceRepository = serviceRepository;
         }
 
         public async Task<ApiResponse<List<ServiceCategoryDto>>> GetAllCategoriesAsync()
         {
             try
             {
-                DataTable dt = await _dbHelper.ExecuteDataTableAsync("sp_GetAllServiceCategories");
-
+                var dt = await _serviceRepository.GetAllCategoriesAsync();
                 var categories = new List<ServiceCategoryDto>();
 
                 foreach (DataRow row in dt.Rows)
@@ -47,13 +45,7 @@ namespace SkillVerse.API.Services.Implementations
         {
             try
             {
-                SqlParameter[] parameters =
-                {
-                    new SqlParameter("@CategoryID", categoryId ?? (object)DBNull.Value)
-                };
-
-                DataTable dt = await _dbHelper.ExecuteDataTableAsync("sp_GetServicesByCategory", parameters);
-
+                var dt = await _serviceRepository.GetServicesByCategoryAsync(categoryId);
                 var services = new List<ServiceDto>();
 
                 foreach (DataRow row in dt.Rows)
