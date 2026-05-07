@@ -32,6 +32,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 
+builder.Services.AddScoped<IWorkerService, WorkerService>();
+
 
 builder.Services.AddAuthentication("Jwt")
     .AddJwtBearer("Jwt", options =>
