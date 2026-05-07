@@ -30,6 +30,8 @@ builder.Services.AddSingleton<JwtHelper>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+builder.Services.AddScoped<IUserService, UserService>();
+
 
 builder.Services.AddAuthentication("Jwt")
     .AddJwtBearer("Jwt", options =>
