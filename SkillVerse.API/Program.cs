@@ -1,3 +1,6 @@
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using SkillVerse.API.DataAccess;
 using SkillVerse.API.DataAccess.Repository.Implementations;
 using SkillVerse.API.DataAccess.Repository.Interfaces;
@@ -6,12 +9,11 @@ using SkillVerse.API.Middleware;
 using SkillVerse.API.Services.Implementations;
 using SkillVerse.API.Services.Interfaces;
 using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
 
 builder.Services.AddCors(options =>
 {
@@ -28,12 +30,10 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// DbHelper
 builder.Services.AddSingleton<DbHelper>();
-
-// Base Repository
 builder.Services.AddScoped<IBaseRepository, BaseRepository>();
 
+// Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IWorkerRepository, WorkerRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
@@ -51,7 +51,6 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 
-
 builder.Services.AddSingleton<JwtHelper>();
 
 builder.Services.AddAuthentication("Jwt")
@@ -66,8 +65,7 @@ builder.Services.AddAuthentication("Jwt")
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings["Issuer"],
             ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings["Key"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!)),
             ClockSkew = TimeSpan.Zero
         };
     });
@@ -84,11 +82,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowFrontend");
-
 app.UseMiddleware<ExceptionMiddleware>();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
