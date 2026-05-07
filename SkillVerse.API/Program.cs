@@ -38,7 +38,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IWorkerRepository, WorkerRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
-// builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
 
 
 builder.Services.AddScoped<IAuthService, AuthService>();
