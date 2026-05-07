@@ -40,6 +40,8 @@ builder.Services.AddScoped<IServiceService, ServiceService>();
 
 builder.Services.AddScoped<IReviewService, ReviewService>();
 
+builder.Services.AddScoped<IAdminService, AdminService>();
+
 
 builder.Services.AddAuthentication("Jwt")
     .AddJwtBearer("Jwt", options =>
