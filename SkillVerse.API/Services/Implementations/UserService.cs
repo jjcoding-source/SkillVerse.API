@@ -1,6 +1,5 @@
-﻿using System.Data;
-using Microsoft.Data.SqlClient;
-using SkillVerse.API.DataAccess;
+﻿
+using SkillVerse.API.DataAccess.Repository.Interfaces;
 using SkillVerse.API.DTOs.Common;
 using SkillVerse.API.DTOs.User;
 using SkillVerse.API.Services.Interfaces;
@@ -9,25 +8,23 @@ namespace SkillVerse.API.Services.Implementations
 {
     public class UserService : IUserService
     {
-        private readonly DbHelper _dbHelper;
+        private readonly IUserRepository _userRepository;
 
-        public UserService(DbHelper dbHelper)
+        public UserService(IUserRepository userRepository)
         {
-            _dbHelper = dbHelper;
+            _userRepository = userRepository;
         }
 
         public async Task<ApiResponse<UserProfileDto>> GetUserProfileAsync(int userId)
         {
             try
             {
-                SqlParameter[] parameters = { new("@UserID", userId) };
-
-                DataTable dt = await _dbHelper.ExecuteDataTableAsync("sp_GetUserProfile", parameters);
+                var dt = await _userRepository.GetUserProfileAsync(userId);
 
                 if (dt.Rows.Count == 0)
                     return ApiResponse<UserProfileDto>.ErrorResponse("User not found");
 
-                DataRow row = dt.Rows[0];
+                var row = dt.Rows[0];
 
                 var profile = new UserProfileDto
                 {
@@ -43,7 +40,7 @@ namespace SkillVerse.API.Services.Implementations
             }
             catch (Exception ex)
             {
-                return ApiResponse<UserProfileDto>.ErrorResponse("Failed to fetch profile", new List<string> { ex.Message });
+                return ApiResponse<UserProfileDto>.ErrorResponse(ex.Message);
             }
         }
 
@@ -51,21 +48,12 @@ namespace SkillVerse.API.Services.Implementations
         {
             try
             {
-                SqlParameter[] parameters =
-                {
-                    new("@UserID", userId),
-                    new("@FullName", dto.FullName),
-                    new("@Phone", dto.Phone),
-                    new("@ProfileImage", dto.ProfileImage ?? (object)DBNull.Value)
-                };
-
-                await _dbHelper.ExecuteNonQueryAsync("sp_UpdateUserProfile", parameters);
-
+                await _userRepository.UpdateUserProfileAsync(userId, dto);
                 return ApiResponse<bool>.SuccessResponse(true, "Profile updated successfully");
             }
             catch (Exception ex)
             {
-                return ApiResponse<bool>.ErrorResponse("Failed to update profile", new List<string> { ex.Message });
+                return ApiResponse<bool>.ErrorResponse(ex.Message);
             }
         }
     }
