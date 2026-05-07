@@ -36,7 +36,7 @@ builder.Services.AddScoped<IBaseRepository, BaseRepository>();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IWorkerRepository, WorkerRepository>();
-// builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 // builder.Services.AddScoped<IChatRepository, ChatRepository>();
 
 
