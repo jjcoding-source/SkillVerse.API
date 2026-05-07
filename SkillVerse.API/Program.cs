@@ -38,6 +38,8 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 
 builder.Services.AddScoped<IServiceService, ServiceService>();
 
+builder.Services.AddScoped<IReviewService, ReviewService>();
+
 
 builder.Services.AddAuthentication("Jwt")
     .AddJwtBearer("Jwt", options =>
