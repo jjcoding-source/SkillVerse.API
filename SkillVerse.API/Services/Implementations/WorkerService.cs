@@ -98,5 +98,51 @@ namespace SkillVerse.API.Services.Implementations
                 return ApiResponse<bool>.ErrorResponse(ex.Message);
             }
         }
+
+        public async Task<ApiResponse<List<WorkerSearchDto>>> SearchWorkersAsync(
+    string? searchTerm = null,
+    string? city = null,
+    string? skill = null,
+    decimal? minRating = null)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+            new SqlParameter("@SearchTerm", searchTerm ?? (object)DBNull.Value),
+            new SqlParameter("@City", city ?? (object)DBNull.Value),
+            new SqlParameter("@Skill", skill ?? (object)DBNull.Value),
+            new SqlParameter("@MinRating", minRating ?? (object)DBNull.Value)
+        };
+
+                DataTable dt = await _dbHelper.ExecuteDataTableAsync("sp_SearchWorkers", parameters);
+
+                var workers = new List<WorkerSearchDto>();
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    workers.Add(new WorkerSearchDto
+                    {
+                        WorkerID = Convert.ToInt32(row["WorkerID"]),
+                        UserID = Convert.ToInt32(row["UserID"]),
+                        FullName = row["FullName"].ToString() ?? "",
+                        ProfileImage = row["ProfileImage"]?.ToString(),
+                        Skills = row["Skills"]?.ToString() ?? "",
+                        City = row["City"].ToString() ?? "",
+                        Rating = Convert.ToDecimal(row["Rating"]),
+                        TotalJobsCompleted = Convert.ToInt32(row["TotalJobsCompleted"]),
+                        HourlyRate = row["HourlyRate"] != DBNull.Value ? Convert.ToDecimal(row["HourlyRate"]) : null,
+                        IsAvailable = Convert.ToBoolean(row["IsAvailable"])
+                    });
+                }
+
+                return ApiResponse<List<WorkerSearchDto>>.SuccessResponse(workers);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<List<WorkerSearchDto>>.ErrorResponse(ex.Message);
+            }
+        }
+
     }
 }
