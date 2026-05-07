@@ -1,7 +1,5 @@
 ﻿
-using System.Data;
-using Microsoft.Data.SqlClient; 
-using SkillVerse.API.DataAccess;
+using SkillVerse.API.DataAccess.Repository.Interfaces;
 using SkillVerse.API.DTOs.Auth;
 using SkillVerse.API.DTOs.Common;
 using SkillVerse.API.Helpers;
@@ -11,12 +9,12 @@ namespace SkillVerse.API.Services.Implementations
 {
     public class AuthService : IAuthService
     {
-        private readonly DbHelper _dbHelper;
+        private readonly IUserRepository _userRepository;
         private readonly JwtHelper _jwtHelper;
 
-        public AuthService(DbHelper dbHelper, JwtHelper jwtHelper)
+        public AuthService(IUserRepository userRepository, JwtHelper jwtHelper)
         {
-            _dbHelper = dbHelper;
+            _userRepository = userRepository;
             _jwtHelper = jwtHelper;
         }
 
@@ -24,20 +22,14 @@ namespace SkillVerse.API.Services.Implementations
         {
             try
             {
-                SqlParameter[] parameters =
-                {
-                    new SqlParameter("@Email", loginDto.Email),
-                    new SqlParameter("@PasswordHash", loginDto.Password)   
-                };
-
-                DataTable dt = await _dbHelper.ExecuteDataTableAsync("sp_LoginUser", parameters);
+                var dt = await _userRepository.LoginUserAsync(loginDto.Email, loginDto.Password);
 
                 if (dt.Rows.Count == 0)
                 {
                     return ApiResponse<LoginResponseDto>.ErrorResponse("Invalid email or password");
                 }
 
-                DataRow row = dt.Rows[0];
+                var row = dt.Rows[0];
 
                 var loginResponse = new LoginResponseDto
                 {
@@ -58,7 +50,7 @@ namespace SkillVerse.API.Services.Implementations
             }
             catch (Exception ex)
             {
-                return ApiResponse<LoginResponseDto>.ErrorResponse("Login failed: " + ex.Message);
+                return ApiResponse<LoginResponseDto>.ErrorResponse("Login failed", new List<string> { ex.Message });
             }
         }
 
@@ -66,16 +58,7 @@ namespace SkillVerse.API.Services.Implementations
         {
             try
             {
-                SqlParameter[] parameters =
-                {
-                    new SqlParameter("@FullName", registerDto.FullName),
-                    new SqlParameter("@Email", registerDto.Email),
-                    new SqlParameter("@Phone", registerDto.Phone),
-                    new SqlParameter("@PasswordHash", registerDto.Password), 
-                    new SqlParameter("@RoleID", registerDto.RoleID)
-                };
-
-                int result = await _dbHelper.ExecuteNonQueryAsync("sp_CreateUser", parameters);
+                int result = await _userRepository.CreateUserAsync(registerDto);
 
                 if (result > 0)
                 {
