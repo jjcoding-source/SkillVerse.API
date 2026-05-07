@@ -1,34 +1,31 @@
 ﻿
-using System.Data;
-using Microsoft.Data.SqlClient;
-using SkillVerse.API.DataAccess;
+using SkillVerse.API.DataAccess.Repository.Interfaces;
 using SkillVerse.API.DTOs.Common;
 using SkillVerse.API.DTOs.Worker;
 using SkillVerse.API.Services.Interfaces;
+using System.Data;
 
 namespace SkillVerse.API.Services.Implementations
 {
     public class WorkerService : IWorkerService
     {
-        private readonly DbHelper _dbHelper;
+        private readonly IWorkerRepository _workerRepository;
 
-        public WorkerService(DbHelper dbHelper)
+        public WorkerService(IWorkerRepository workerRepository)
         {
-            _dbHelper = dbHelper;
+            _workerRepository = workerRepository;
         }
 
         public async Task<ApiResponse<WorkerProfileDto>> GetWorkerProfileAsync(int userId)
         {
             try
             {
-                SqlParameter[] parameters = { new SqlParameter("@UserID", userId) };
-
-                DataTable dt = await _dbHelper.ExecuteDataTableAsync("sp_GetWorkerProfile", parameters);
+                var dt = await _workerRepository.GetWorkerProfileAsync(userId);
 
                 if (dt.Rows.Count == 0)
                     return ApiResponse<WorkerProfileDto>.ErrorResponse("Worker profile not found");
 
-                DataRow row = dt.Rows[0];
+                var row = dt.Rows[0];
 
                 var profile = new WorkerProfileDto
                 {
@@ -58,19 +55,7 @@ namespace SkillVerse.API.Services.Implementations
         {
             try
             {
-                SqlParameter[] parameters =
-                {
-                    new SqlParameter("@UserID", userId),
-                    new SqlParameter("@Skills", dto.Skills),
-                    new SqlParameter("@ExperienceYears", dto.ExperienceYears ?? (object)DBNull.Value),
-                    new SqlParameter("@HourlyRate", dto.HourlyRate ?? (object)DBNull.Value),
-                    new SqlParameter("@Description", dto.Description ?? (object)DBNull.Value),
-                    new SqlParameter("@Address", dto.Address),
-                    new SqlParameter("@City", dto.City)
-                };
-
-                await _dbHelper.ExecuteNonQueryAsync("sp_SaveWorkerProfile", parameters);
-
+                await _workerRepository.SaveWorkerProfileAsync(userId, dto);
                 return ApiResponse<bool>.SuccessResponse(true, "Worker profile saved successfully");
             }
             catch (Exception ex)
@@ -83,15 +68,8 @@ namespace SkillVerse.API.Services.Implementations
         {
             try
             {
-                SqlParameter[] parameters =
-                {
-                    new SqlParameter("@UserID", userId),
-                    new SqlParameter("@IsAvailable", isAvailable)
-                };
-
-                await _dbHelper.ExecuteNonQueryAsync("sp_ToggleWorkerAvailability", parameters);
-
-                return ApiResponse<bool>.SuccessResponse(true, "Availability updated");
+                await _workerRepository.ToggleAvailabilityAsync(userId, isAvailable);
+                return ApiResponse<bool>.SuccessResponse(true, "Availability updated successfully");
             }
             catch (Exception ex)
             {
@@ -100,22 +78,11 @@ namespace SkillVerse.API.Services.Implementations
         }
 
         public async Task<ApiResponse<List<WorkerSearchDto>>> SearchWorkersAsync(
-    string? searchTerm = null,
-    string? city = null,
-    string? skill = null,
-    decimal? minRating = null)
+            string? searchTerm = null, string? city = null, string? skill = null, decimal? minRating = null)
         {
             try
             {
-                SqlParameter[] parameters =
-                {
-            new SqlParameter("@SearchTerm", searchTerm ?? (object)DBNull.Value),
-            new SqlParameter("@City", city ?? (object)DBNull.Value),
-            new SqlParameter("@Skill", skill ?? (object)DBNull.Value),
-            new SqlParameter("@MinRating", minRating ?? (object)DBNull.Value)
-        };
-
-                DataTable dt = await _dbHelper.ExecuteDataTableAsync("sp_SearchWorkers", parameters);
+                var dt = await _workerRepository.SearchWorkersAsync(searchTerm, city, skill, minRating);
 
                 var workers = new List<WorkerSearchDto>();
 
@@ -143,6 +110,5 @@ namespace SkillVerse.API.Services.Implementations
                 return ApiResponse<List<WorkerSearchDto>>.ErrorResponse(ex.Message);
             }
         }
-
     }
 }
