@@ -67,5 +67,32 @@ namespace SkillVerse.API.DataAccess.Repository.Implementations
 
             return _baseRepository.ExecuteNonQueryAsync("sp_UpdateBookingStatus", parameters);
         }
+
+        public Task<DataTable> GetBookingDetailsByIdAsync(int bookingId)
+        {
+            SqlParameter[] parameters = { new SqlParameter("@BookingID", bookingId) };
+            return _baseRepository.ExecuteDataTableAsync("sp_GetBookingDetailsById", parameters);
+        }
+
+        public Task<int> AcceptBookingAsync(int bookingId, int workerId)
+        {
+            SqlParameter[] parameters =
+            {
+        new SqlParameter("@BookingID", bookingId),
+        new SqlParameter("@WorkerID", workerId)
+    };
+            return _baseRepository.ExecuteNonQueryAsync("sp_AcceptBooking", parameters);
+        }
+
+        public Task<int> RejectBookingAsync(int bookingId, string cancelReason)
+        {
+            SqlParameter[] parameters =
+            {
+        new SqlParameter("@BookingID", bookingId),
+        new SqlParameter("@CancelReason", cancelReason)
+    };
+            return _baseRepository.ExecuteNonQueryAsync("sp_RejectBooking", parameters);
+        }
+
     }
 }
