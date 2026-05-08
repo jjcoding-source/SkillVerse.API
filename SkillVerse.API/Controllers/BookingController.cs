@@ -22,7 +22,6 @@ namespace SkillVerse.API.Controllers
         public async Task<IActionResult> CreateBooking([FromBody] BookingCreateDto dto)
         {
             int customerId = Convert.ToInt32(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-
             var response = await _bookingService.CreateBookingAsync(customerId, dto);
             return response.Success ? Ok(response) : BadRequest(response);
         }
@@ -32,18 +31,43 @@ namespace SkillVerse.API.Controllers
         public async Task<IActionResult> GetMyBookings([FromQuery] string? status = null)
         {
             int customerId = Convert.ToInt32(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-
             var response = await _bookingService.GetCustomerBookingsAsync(customerId, status);
-            return response.Success ? Ok(response) : BadRequest(response);
+            return Ok(response);
         }
 
         [HttpGet("worker-bookings")]
         [Authorize(Roles = "Worker")]
         public async Task<IActionResult> GetWorkerBookings([FromQuery] string? status = null)
         {
+            int userId = Convert.ToInt32(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+  
+            var response = await _bookingService.GetWorkerBookingsAsync(userId, status);
+            return Ok(response);
+        }
+
+        [HttpGet("{bookingId}")]
+        [Authorize]
+        public async Task<IActionResult> GetBookingDetails(int bookingId)
+        {
+            var response = await _bookingService.GetBookingDetailsByIdAsync(bookingId);
+            return Ok(response);
+        }
+
+        [HttpPut("{bookingId}/accept")]
+        [Authorize(Roles = "Worker")]
+        public async Task<IActionResult> AcceptBooking(int bookingId)
+        {
             int workerUserId = Convert.ToInt32(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
 
-            var response = await _bookingService.GetWorkerBookingsAsync(workerUserId, status);
+            var response = await _bookingService.AcceptBookingAsync(bookingId, workerUserId);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpPut("{bookingId}/reject")]
+        [Authorize(Roles = "Worker")]
+        public async Task<IActionResult> RejectBooking(int bookingId, [FromBody] RejectBookingDto dto)
+        {
+            var response = await _bookingService.RejectBookingAsync(bookingId, dto.CancelReason);
             return response.Success ? Ok(response) : BadRequest(response);
         }
 
@@ -58,8 +82,7 @@ namespace SkillVerse.API.Controllers
                 bookingId,
                 role == "Worker" ? userId : null,
                 dto.Status,
-                dto.CancelReason
-            );
+                dto.CancelReason);
 
             return response.Success ? Ok(response) : BadRequest(response);
         }
