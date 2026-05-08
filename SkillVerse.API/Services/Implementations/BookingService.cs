@@ -77,15 +77,13 @@ namespace SkillVerse.API.Services.Implementations
                     {
                         BookingID = Convert.ToInt32(row["BookingID"]),
                         CustomerID = Convert.ToInt32(row["CustomerID"]),
-                        WorkerID = row["WorkerID"] != DBNull.Value ? Convert.ToInt32(row["WorkerID"]) : null,
                         ServiceName = row["ServiceName"].ToString() ?? "",
-                        WorkerName = row["WorkerName"]?.ToString() ?? "",
                         BookingDate = Convert.ToDateTime(row["BookingDate"]),
                         PreferredTimeSlot = row["PreferredTimeSlot"]?.ToString(),
                         Address = row["Address"].ToString() ?? "",
                         City = row["City"].ToString() ?? "",
-                        Status = row["Status"].ToString() ?? "",
                         TotalAmount = Convert.ToDecimal(row["TotalAmount"]),
+                        Status = row["Status"].ToString() ?? "",
                         CreatedAt = Convert.ToDateTime(row["CreatedAt"])
                     });
                 }
@@ -98,16 +96,56 @@ namespace SkillVerse.API.Services.Implementations
             }
         }
 
+        public async Task<ApiResponse<bool>> AcceptBookingAsync(int bookingId, int workerId)
+        {
+            try
+            {
+                await _bookingRepository.AcceptBookingAsync(bookingId, workerId);
+                return ApiResponse<bool>.SuccessResponse(true, "Booking accepted successfully");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<bool>.ErrorResponse(ex.Message);
+            }
+        }
+
+        public async Task<ApiResponse<bool>> RejectBookingAsync(int bookingId, string cancelReason)
+        {
+            try
+            {
+                await _bookingRepository.RejectBookingAsync(bookingId, cancelReason);
+                return ApiResponse<bool>.SuccessResponse(true, "Booking rejected successfully");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<bool>.ErrorResponse(ex.Message);
+            }
+        }
+
         public async Task<ApiResponse<bool>> UpdateBookingStatusAsync(int bookingId, int? workerId, string newStatus, string? cancelReason = null)
         {
             try
             {
                 await _bookingRepository.UpdateBookingStatusAsync(bookingId, workerId, newStatus, cancelReason);
-                return ApiResponse<bool>.SuccessResponse(true, "Booking status updated successfully");
+                return ApiResponse<bool>.SuccessResponse(true, "Status updated successfully");
             }
             catch (Exception ex)
             {
                 return ApiResponse<bool>.ErrorResponse(ex.Message);
+            }
+        }
+
+        public async Task<ApiResponse<DataTable>> GetBookingDetailsByIdAsync(int bookingId)
+        {
+            try
+            {
+                
+                var dt = await _bookingRepository.GetCustomerBookingsAsync(bookingId);
+                return ApiResponse<DataTable>.SuccessResponse(dt);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<DataTable>.ErrorResponse(ex.Message);
             }
         }
     }
